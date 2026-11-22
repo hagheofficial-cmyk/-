@@ -72,8 +72,7 @@ def dim_v(msp, ox, oy, y1, y2, x, label=None):
     txt(msp, ox, oy, x + 0.12, (y1 + y2) / 2, val, h=0.20, layer="10_DIMENSIONS")
 
 
-def door(msp, ox, oy, x, y, w=0.90, direction="NE"):
-    # Draws door leaf + 90-degree swing arc
+def door(msp, ox, oy, x, y, w=0.90, direction="NE", label=None):
     if direction == "NE":
         msp.add_line((ox + x, oy + y), (ox + x, oy + y + w), dxfattribs={"layer": "05_DOORS"})
         msp.add_arc((ox + x, oy + y), w, 0, 90, dxfattribs={"layer": "05_DOORS"})
@@ -86,6 +85,8 @@ def door(msp, ox, oy, x, y, w=0.90, direction="NE"):
     else:
         msp.add_line((ox + x, oy + y), (ox + x + w, oy + y), dxfattribs={"layer": "05_DOORS"})
         msp.add_arc((ox + x, oy + y), w, 0, 90, dxfattribs={"layer": "05_DOORS"})
+    if label:
+        txt(msp, ox, oy, x + 0.1, y + 0.1, label, h=0.16, layer="05_DOORS")
 
 
 def window(msp, ox, oy, x, y, w=1.60, horiz=True):
@@ -97,7 +98,6 @@ def window(msp, ox, oy, x, y, w=1.60, horiz=True):
         msp.add_line((ox + x, oy + y), (ox + x, oy + y + w), dxfattribs={"layer": "06_WINDOWS"})
 
 
-# --- FURNITURE SYMBOLS ---
 def furn_car(msp, ox, oy, x, y, w=1.85, l=4.20):
     cx, cy = x + (2.50 - w) / 2, y + (5.00 - l) / 2
     rect(msp, ox, oy, cx, cy, w, l, "12_FURNITURE")
@@ -112,17 +112,17 @@ def furn_bed(msp, ox, oy, x, y, w=1.60, l=2.00):
 
 def furn_sofa(msp, ox, oy, x, y, w=2.20, d=0.85):
     rect(msp, ox, oy, x, y, w, d, "12_FURNITURE")
-    rect(msp, ox, oy, x + 0.4, y + d + 0.35, 1.20, 0.60, "12_FURNITURE")  # coffee table
+    rect(msp, ox, oy, x + 0.4, y + d + 0.35, 1.20, 0.60, "12_FURNITURE")
 
 
 def furn_island_kitchen(msp, ox, oy, x, y):
-    rect(msp, ox, oy, x, y, 2.80, 0.65, "12_FURNITURE")       # main counter
-    rect(msp, ox, oy, x + 0.4, y + 1.40, 2.00, 0.90, "12_FURNITURE")  # island
+    rect(msp, ox, oy, x, y, 2.80, 0.65, "12_FURNITURE")
+    rect(msp, ox, oy, x + 0.4, y + 1.40, 2.00, 0.90, "12_FURNITURE")
 
 
 def furn_bath(msp, ox, oy, x, y):
-    rect(msp, ox, oy, x + 0.1, y + 0.1, 0.45, 0.65, "12_FURNITURE")  # WC
-    rect(msp, ox, oy, x + 0.8, y + 0.1, 0.60, 0.45, "12_FURNITURE")  # sink
+    rect(msp, ox, oy, x + 0.1, y + 0.1, 0.45, 0.65, "12_FURNITURE")
+    rect(msp, ox, oy, x + 0.8, y + 0.1, 0.60, 0.45, "12_FURNITURE")
 
 
 def draw_base_grid(msp, ox, oy, title, y_indices=range(len(GRID_Y))):
@@ -151,22 +151,26 @@ def draw_base_grid(msp, ox, oy, title, y_indices=range(len(GRID_Y))):
 
 
 def draw_core(msp, ox, oy):
+    # Elevator
     ex, ey, ew, eh = ELEV_RECT
-    rect(msp, ox, oy, ex, ey, ew, eh, "07_STAIRS_ELEV")
+    wall_box(msp, ox, oy, ex, ey, ew, eh, t=0.15, layer="07_STAIRS_ELEV")
     msp.add_line((ox + ex, oy + ey), (ox + ex + ew, oy + ey + eh), dxfattribs={"layer": "07_STAIRS_ELEV"})
     msp.add_line((ox + ex, oy + ey + eh), (ox + ex + ew, oy + ey), dxfattribs={"layer": "07_STAIRS_ELEV"})
     txt(msp, ox, oy, ex + 0.2, ey + 0.9, "ELEV 8P", h=0.20, layer="07_STAIRS_ELEV")
-    door(msp, ox, oy, ex + 0.45, ey, 0.90, "NE")
+    door(msp, ox, oy, ex + ew, ey + 0.5, 0.90, "NE", "ELEV DOOR")
 
+    # Enclosed Staircase Box (20cm wall enclosure + fire door)
     sx, sy, sw, sh = STAIR_RECT
-    rect(msp, ox, oy, sx, sy, sw, sh, "07_STAIRS_ELEV")
+    wall_box(msp, ox, oy, sx, sy, sw, sh, t=0.20, layer="07_STAIRS_ELEV")
     for k in range(1, 11):
-        ty = sy + k * (sh / 11.0)
-        msp.add_line((ox + sx, oy + ty), (ox + sx + sw, oy + ty), dxfattribs={"layer": "07_STAIRS_ELEV"})
-    msp.add_line((ox + sx + sw / 2, oy + sy), (ox + sx + sw / 2, oy + sy + sh), dxfattribs={"layer": "07_STAIRS_ELEV"})
-    txt(msp, ox, oy, sx + 0.3, sy + 1.6, "STAIRCASE", h=0.20, layer="07_STAIRS_ELEV")
-    # Staircase box door
-    door(msp, ox, oy, sx + sw, sy + 0.4, 0.90, "NE")
+        ty = sy + 0.20 + k * ((sh - 0.40) / 11.0)
+        msp.add_line((ox + sx + 0.20, oy + ty), (ox + sx + sw - 0.20, oy + ty), dxfattribs={"layer": "07_STAIRS_ELEV"})
+    msp.add_line((ox + sx + sw / 2, oy + sy + 0.20), (ox + sx + sw / 2, oy + sy + sh - 0.20), dxfattribs={"layer": "07_STAIRS_ELEV"})
+    txt(msp, ox, oy, sx + 0.3, sy + 1.6, "STAIR BOX", h=0.20, layer="07_STAIRS_ELEV")
+    door(msp, ox, oy, sx + sw, sy + 0.5, 0.90, "NE", "STAIR DOOR")
+
+    # Core Landing (Lobby)
+    txt(msp, ox, oy, 7.15, 20.5, "CORE LOBBY", h=0.18, layer="11_TEXT")
 
     for idx, (dx, dy, dw, dh) in enumerate([DUCT_1, DUCT_2], 1):
         rect(msp, ox, oy, dx, dy, dw, dh, "09_MEP_DUCTS")
@@ -200,27 +204,29 @@ def draw_basement(msp, ox=0, oy=0):
     txt(msp, ox, oy, 7.60, 2.60, "MECH & PUMP ROOM", h=0.22)
     door(msp, ox, oy, 7.25, 3.80, 0.90, "NW")
 
+    # 8 Storage rooms with 1.40m clear corridor between them!
     for i in range(4):
         sx = 4.25 + i * 2.00
-        wall_box(msp, ox, oy, sx, 5.75, 1.95, 2.40, t=0.10)
-        door(msp, ox, oy, sx + 0.5, 8.15, 0.75, "NE")
-        txt(msp, ox, oy, sx + 0.2, 6.8, f"S{i+1}", h=0.18)
-        wall_box(msp, ox, oy, sx, 8.25, 1.95, 2.40, t=0.10)
-        door(msp, ox, oy, sx + 0.5, 10.65, 0.75, "NE")
-        txt(msp, ox, oy, sx + 0.2, 9.3, f"S{i+5}", h=0.18)
+        wall_box(msp, ox, oy, sx, 5.40, 1.95, 2.00, t=0.10)
+        door(msp, ox, oy, sx + 0.5, 7.40, 0.75, "NE")
+        txt(msp, ox, oy, sx + 0.2, 6.2, f"S{i+1}", h=0.18)
 
+        wall_box(msp, ox, oy, sx, 8.80, 1.95, 2.00, t=0.10)
+        door(msp, ox, oy, sx + 0.5, 8.80, 0.75, "SE")
+        txt(msp, ox, oy, sx + 0.2, 9.6, f"S{i+5}", h=0.18)
+
+    txt(msp, ox, oy, 5.5, 8.0, "STORAGE CORRIDOR (1.40m WIDE)", h=0.20, layer="11_TEXT")
+    dim_v(msp, ox, oy, 7.40, 8.80, 4.00, "1.40m")
     draw_core(msp, ox, oy)
 
 
 def draw_ground(msp, ox=0, oy=0):
     draw_base_grid(msp, ox, oy, "LEVEL 00: GROUND FLOOR")
-    # Street Gates (Parking + Pedestrian)
     rect(msp, ox, oy, 0.25, 0.0, 3.50, 0.20, "05_DOORS")
-    txt(msp, ox, oy, 0.4, -0.45, "PARKING GATE (RAMP)", h=0.18, layer="05_DOORS")
+    txt(msp, ox, oy, 0.4, -0.45, "PARKING IN/OUT (RAMP)", h=0.18, layer="05_DOORS")
     rect(msp, ox, oy, 4.25, 0.0, 3.20, 0.20, "05_DOORS")
-    txt(msp, ox, oy, 4.3, -0.45, "PARKING GATE (GROUND)", h=0.18, layer="05_DOORS")
-    door(msp, ox, oy, 8.25, 0.0, 1.20, "NE")
-    txt(msp, ox, oy, 8.2, -0.45, "PEDESTRIAN ENTRANCE", h=0.18, layer="05_DOORS")
+    txt(msp, ox, oy, 4.3, -0.45, "PARKING IN/OUT (GROUND)", h=0.18, layer="05_DOORS")
+    door(msp, ox, oy, 8.25, 0.0, 1.20, "NE", "BUILDING ENTRANCE")
 
     rx, ry, rw, rh = RAMP_RECT
     rect(msp, ox, oy, rx, ry, rw, rh, "08_PARKING_RAMP")
@@ -233,12 +239,12 @@ def draw_ground(msp, ox=0, oy=0):
 
     wall_box(msp, ox, oy, 4.25, 11.75, 4.00, 6.00, t=0.15)
     txt(msp, ox, oy, 4.6, 14.5, "MAIN LOBBY", h=0.22)
-    door(msp, ox, oy, 5.65, 11.75, 1.20, "NE")
+    door(msp, ox, oy, 5.65, 11.75, 1.20, "NE", "LOBBY DOOR")
 
     wall_box(msp, ox, oy, 0.25, 21.50, 4.00, 8.25, t=0.15)
     txt(msp, ox, oy, 0.6, 25.5, "JANITOR LIVING/KITCHEN", h=0.20)
     furn_sofa(msp, ox, oy, 1.0, 23.0)
-    door(msp, ox, oy, 4.25, 22.5, 0.90, "NW")
+    door(msp, ox, oy, 4.25, 22.5, 0.90, "NW", "JANITOR ENTRANCE")
     wall_box(msp, ox, oy, 8.25, 23.75, 4.00, 6.00, t=0.15)
     txt(msp, ox, oy, 8.6, 26.5, "JANITOR BEDROOM", h=0.20)
     furn_bed(msp, ox, oy, 9.5, 26.5)
@@ -252,7 +258,6 @@ def draw_ground(msp, ox=0, oy=0):
 
 def draw_first(msp, ox=0, oy=0):
     draw_base_grid(msp, ox, oy, "LEVEL 01: FIRST FLOOR (2-BED + 1-BED)", y_indices=[2, 3, 4, 5])
-    # Unit 1 (South)
     wall_box(msp, ox, oy, 0.25, 11.75, 4.00, 2.00, t=0.10)
     txt(msp, ox, oy, 0.6, 12.6, "TERRACE", h=0.20)
     wall_box(msp, ox, oy, 0.25, 13.75, 4.00, 4.00, t=0.15)
@@ -263,7 +268,7 @@ def draw_first(msp, ox=0, oy=0):
     wall_box(msp, ox, oy, 4.25, 11.75, 4.00, 6.00, t=0.15)
     txt(msp, ox, oy, 4.6, 14.6, "U1: LIVING", h=0.20)
     furn_sofa(msp, ox, oy, 5.0, 12.8)
-    door(msp, ox, oy, 6.0, 17.75, 0.90, "SE")
+    door(msp, ox, oy, 6.0, 17.75, 1.00, "SE", "U1 ENTRANCE")
     window(msp, ox, oy, 5.2, 11.75, 2.2, horiz=True)
 
     wall_box(msp, ox, oy, 8.25, 11.75, 4.00, 3.50, t=0.15)
@@ -277,11 +282,10 @@ def draw_first(msp, ox=0, oy=0):
     furn_bath(msp, ox, oy, 10.2, 15.5)
     door(msp, ox, oy, 8.25, 16.0, 0.80, "NE")
 
-    # Unit 2 (North)
     wall_box(msp, ox, oy, 0.25, 23.75, 4.00, 6.00, t=0.15)
     txt(msp, ox, oy, 0.6, 26.5, "U2: LIVING + KITCHEN", h=0.20)
     furn_sofa(msp, ox, oy, 1.0, 25.0)
-    door(msp, ox, oy, 4.25, 24.5, 0.90, "NW")
+    door(msp, ox, oy, 4.25, 23.75, 1.00, "NE", "U2 ENTRANCE")
     wall_box(msp, ox, oy, 4.25, 23.75, 4.00, 6.00, t=0.15)
     txt(msp, ox, oy, 4.6, 26.5, "U2: MASTER BED", h=0.20)
     furn_bed(msp, ox, oy, 5.5, 26.5)
@@ -308,7 +312,7 @@ def draw_second(msp, ox=0, oy=0):
     wall_box(msp, ox, oy, 4.25, 11.75, 8.00, 6.00, t=0.15)
     txt(msp, ox, oy, 5.5, 14.6, "GRAND LIVING 48m2", h=0.24)
     furn_sofa(msp, ox, oy, 6.5, 13.0)
-    door(msp, ox, oy, 6.0, 17.75, 1.00, "SE")
+    door(msp, ox, oy, 6.0, 17.75, 1.10, "SE", "U3 MAIN ENTRANCE")
     window(msp, ox, oy, 5.5, 11.75, 3.0, horiz=True)
 
     wall_box(msp, ox, oy, 0.25, 17.75, 4.00, 6.00, t=0.15)
@@ -351,7 +355,7 @@ def draw_typical_two(msp, ox=0, oy=0, title="LEVEL 03: THIRD FLOOR"):
     wall_box(msp, ox, oy, 4.25, 11.75, 4.00, 6.00, t=0.15)
     txt(msp, ox, oy, 4.6, 14.6, "SOUTH: LIVING", h=0.20)
     furn_sofa(msp, ox, oy, 5.0, 12.8)
-    door(msp, ox, oy, 6.0, 17.75, 0.90, "SE")
+    door(msp, ox, oy, 6.0, 17.75, 1.00, "SE", "SOUTH UNIT ENTRANCE")
     window(msp, ox, oy, 5.2, 11.75, 2.2, horiz=True)
 
     wall_box(msp, ox, oy, 8.25, 11.75, 4.00, 3.50, t=0.15)
@@ -368,7 +372,7 @@ def draw_typical_two(msp, ox=0, oy=0, title="LEVEL 03: THIRD FLOOR"):
     wall_box(msp, ox, oy, 0.25, 23.75, 4.00, 6.00, t=0.15)
     txt(msp, ox, oy, 0.6, 26.5, "NORTH: LIVING + KITCHEN", h=0.20)
     furn_sofa(msp, ox, oy, 1.0, 25.0)
-    door(msp, ox, oy, 4.25, 24.5, 0.90, "NW")
+    door(msp, ox, oy, 4.25, 23.75, 1.00, "NE", "NORTH UNIT ENTRANCE")
     wall_box(msp, ox, oy, 4.25, 23.75, 4.00, 6.00, t=0.15)
     txt(msp, ox, oy, 4.6, 26.5, "NORTH: MASTER BED", h=0.20)
     furn_bed(msp, ox, oy, 5.5, 26.5)
@@ -405,4 +409,4 @@ for idx, (_, fn) in enumerate(builders):
     fn(cmsp, idx * 20.0, 0)
 combined.saveas("output/dxf/ALL_PLANS_COMBINED.dxf")
 
-print("Detailed AutoCAD DXF plans generated.")
+print("Updated DXF plans with unit entrances, storage corridor, and enclosed stair box.")
