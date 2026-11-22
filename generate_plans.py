@@ -194,12 +194,17 @@ def draw_lightwell(msp, ox, oy):
 
 
 def draw_basement(msp, ox=0, oy=0):
-    draw_base_grid(msp, ox, oy, "LEVEL -1: BASEMENT (H=2.60m)")
+    draw_base_grid(msp, ox, oy, "LEVEL -1: BASEMENT | EL: -3.00m | H_clear=2.60m")
     wall_box(msp, ox, oy, 0.15, 0.15, LOT_W - 0.30, LOT_L - 0.30, t=0.20, layer="03_WALLS_EXT")
 
     rx, ry, rw, rh = RAMP_RECT
     rect(msp, ox, oy, rx, ry, rw, rh, "08_PARKING_RAMP")
     txt(msp, ox, oy, rx + 0.3, ry + 10.0, "RAMP 15% (3.5x20m) dH<=60cm", h=0.20, layer="08_PARKING_RAMP")
+
+    # Vehicle turning & driving path from Ramp exit (Y=21.0) to P1-P4
+    msp.add_lwpolyline([(ox + 2.0, oy + 20.5), (ox + 2.0, oy + 25.5), (ox + 8.5, oy + 25.5), (ox + 8.5, oy + 17.5)],
+                       dxfattribs={"layer": "08_PARKING_RAMP"})
+    txt(msp, ox, oy, 2.2, 26.0, "VEHICLE TURNING & DRIVE PATH (6.0m CLEAR) ->", h=0.20, layer="08_PARKING_RAMP")
 
     # 4 Independent Parking Bays (zero blocking, 7.50m aisle)
     for px, py, lbl in [(7.25, 24.50, "P1"), (9.75, 24.50, "P2"), (7.25, 12.00, "P3"), (9.75, 12.00, "P4")]:
@@ -228,7 +233,7 @@ def draw_basement(msp, ox=0, oy=0):
 
 
 def draw_ground(msp, ox=0, oy=0):
-    draw_base_grid(msp, ox, oy, "LEVEL 00: GROUND FLOOR (4 INDEPENDENT PARKING + LOBBY)")
+    draw_base_grid(msp, ox, oy, "LEVEL 00: GROUND FLOOR | EL: +0.60m (STREET: 0.00m)")
     # Street Gates (Parking + Pedestrian)
     rect(msp, ox, oy, 0.25, 0.0, 3.50, 0.20, "05_DOORS")
     txt(msp, ox, oy, 0.4, -0.45, "RAMP GATE (IN/OUT)", h=0.18, layer="05_DOORS")
@@ -271,7 +276,7 @@ def draw_ground(msp, ox=0, oy=0):
 
 
 def draw_first(msp, ox=0, oy=0):
-    draw_base_grid(msp, ox, oy, "LEVEL 01: FIRST FLOOR (60% = 18.0m)", y_indices=[2, 3, 4, 5])
+    draw_base_grid(msp, ox, oy, "LEVEL 01: FIRST FLOOR | EL: +4.10m | 60% (18.0m)", y_indices=[2, 3, 4, 5])
     wall_box(msp, ox, oy, 0.25, 12.00, 4.00, 2.00, t=0.10)
     txt(msp, ox, oy, 0.6, 12.8, "TERRACE", h=0.20)
     wall_box(msp, ox, oy, 0.25, 14.00, 4.00, 4.00, t=0.15)
@@ -315,7 +320,7 @@ def draw_first(msp, ox=0, oy=0):
 
 
 def draw_second(msp, ox=0, oy=0):
-    draw_base_grid(msp, ox, oy, "LEVEL 02: SECOND FLOOR (60% = 18.0m)", y_indices=[2, 3, 4, 5])
+    draw_base_grid(msp, ox, oy, "LEVEL 02: SECOND FLOOR | EL: +7.60m | 60% (18.0m)", y_indices=[2, 3, 4, 5])
     wall_box(msp, ox, oy, 0.25, 12.00, 4.00, 2.00, t=0.10)
     txt(msp, ox, oy, 0.6, 12.8, "SOUTH TERRACE", h=0.20)
     wall_box(msp, ox, oy, 0.25, 14.00, 4.00, 4.00, t=0.15)
@@ -408,8 +413,8 @@ builders = [
     ("output/dxf/02_ground.dxf", draw_ground),
     ("output/dxf/03_first_floor.dxf", draw_first),
     ("output/dxf/04_second_floor.dxf", draw_second),
-    ("output/dxf/05_third_floor.dxf", lambda msp, ox=0, oy=0: draw_typical_two(msp, ox, oy, "LEVEL 03: THIRD FLOOR (60% = 18.0m)")),
-    ("output/dxf/06_fourth_floor.dxf", lambda msp, ox=0, oy=0: draw_typical_two(msp, ox, oy, "LEVEL 04: FOURTH FLOOR (60% = 18.0m)")),
+    ("output/dxf/05_third_floor.dxf", lambda msp, ox=0, oy=0: draw_typical_two(msp, ox, oy, "LEVEL 03: THIRD FLOOR | EL: +11.10m | 60% (18.0m)")),
+    ("output/dxf/06_fourth_floor.dxf", lambda msp, ox=0, oy=0: draw_typical_two(msp, ox, oy, "LEVEL 04: FOURTH FLOOR | EL: +14.60m | 60% (18.0m)")),
 ]
 
 for path, fn in builders:
